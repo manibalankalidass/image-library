@@ -1,0 +1,23 @@
+# Environments
+.env
+.venv/
+env/
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Node / NPM
+node_modules/
+*.tgz
+
+# IDE / Editor folders
+.vscode/
+.idea/
+
+# Media / Application specific
+uploads/
+thumbnails/
+*.zip

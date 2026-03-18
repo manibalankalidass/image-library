@@ -1,8 +1,10 @@
 .venv/
-.env/
+.env
 __pycache__/
-*.pyc
+*.py[cod]
 .vscode/
 node_modules/
 *.tgz
 *.zip
+uploads/
+thumbnails/
