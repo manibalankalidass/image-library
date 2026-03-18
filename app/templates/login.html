@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImageVault — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f8fafc;
+      --surface:  #ffffff;
+      --border:   #e2e8f0;
+      --accent:   #f27a18;
+      --accent2:  #006b74;
+      --success:  #10b981;
+      --danger:   #ef4444;
+      --text:     #1e293b;
+      --muted:    #64748b;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Ambient blobs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    body::before {
+      width: 500px; height: 500px;
+      background: var(--accent);
+      top: -120px; left: -100px;
+    }
+    body::after {
+      width: 400px; height: 400px;
+      background: var(--accent2);
+      bottom: -100px; right: -80px;
+    }
+
+    .login-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      padding: 16px;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px 36px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .brand-logo {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .brand-logo span { color: var(--accent); }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input::placeholder { color: var(--muted); }
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(242, 122, 24, 0.1);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      margin-top: 8px;
+      background: var(--accent);
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn-login:hover  { background: #d86200; transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(0); }
+
+    .alert {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 10px;
+      color: var(--danger);
+      font-size: 13px;
+      padding: 11px 14px;
+      margin-bottom: 20px;
+    }
+    .alert-icon { font-size: 16px; flex-shrink: 0; }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+
+    <div class="brand">
+      <div class="brand-logo">Image<span>Vault</span></div>
+      <div class="brand-sub">Media Library</div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert">
+          <span class="alert-icon">⚠</span>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" autocomplete="off">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" type="text" id="username" name="username"
+               placeholder="Enter your username" required autofocus />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" type="password" id="password" name="password"
+               placeholder="••••••••" required />
+      </div>
+
+      <button class="btn-login" type="submit">Sign In →</button>
+    </form>
+
+    <div class="login-footer">ImageVault &copy; {{ 2026 }} &mdash; Secure Media Library</div>
+  </div>
+</div>
+</body>
+</html>

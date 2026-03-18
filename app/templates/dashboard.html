@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}ImageVault - Dashboard{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div style="display: flex; align-items: center; gap: 14px">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="page-title">Image <span>Dashboard</span></div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">🖼</div>
+      <div class="stat-value" id="totalCount">{{ total_images }}</div>
+      <div class="stat-label">Total Images</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📁</div>
+      <div class="stat-value">{{ total_categories }}</div>
+      <div class="stat-label">Categories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💾</div>
+      <div class="stat-value">{{ total_size_mb }}<span style="font-size: 18px; color: var(--muted)">MB</span></div>
+      <div class="stat-label">Storage Used</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-value" id="newToday">{{ today_images }}</div>
+      <div class="stat-label">Added Today</div>
+    </div>
+  </div>
+
+  <div id="gallery-root">
+    {% for category, images in categories.items() %}
+    <div class="category-section" id="cat-{{ category }}">
+      <div class="category-header">
+        <div class="category-title-wrap">
+          <div class="category-stripe" style="background: var(--accent2)"></div>
+          <div class="category-name">{{ category }}</div>
+          <div class="category-count">{{ images | length }} images</div>
+        </div>
+        <a class="see-all" href="#">See all →</a>
+      </div>
+
+      <div class="img-grid" id="grid-{{ category }}">
+        {% for img in images %}
+        <div class="img-card" id="img-{{ img[0] }}">
+          <img class="img-thumb" src="/{{ img[3] }}" alt="{{ img[2] }}" loading="lazy" />
+          <div class="img-overlay">
+            <button class="overlay-btn" onclick="viewImg({{ img[0] }})">View</button>
+            <button class="overlay-btn" onclick="downloadImg({{ img[0] }})">↓ Save</button>
+            <button class="overlay-btn del" onclick="deleteImg({{ img[0] }})">✕</button>
+          </div>
+          <div class="img-info">
+            <div class="img-name">{{ img[2] }}</div>
+            <div class="img-meta">
+              <span class="img-size">{{ img[4] | filesizeformat }}</span>
+              <span class="img-date">{{ img[6].strftime("%d %b %Y") }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

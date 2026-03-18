@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}ImageVault - Upload{% endblock %}
+
+{% block head_extra %}
+  
+{% endblock %}
+
+{% block content %}
+
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <div class="page-title">Upload <span>Images</span></div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="{{ url_for('dashboard') }}"><button class="btn btn-ghost">← Back to Dashboard</button></a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="upload-tabs">
+      <button class="tab-btn active" onclick="switchTab('single', this)">
+        🖼 Single Image
+        <span class="tab-badge">JPG/PNG</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('bulk', this)">
+        📦 Bulk ZIP Upload
+        <span class="tab-badge blue">Multi</span>
+      </button>
+    </div>
+
+    <div class="panel active" id="panel-single">
+      <div class="two-col">
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="upload-card">
+            <div class="upload-card-header">
+              <div class="upload-card-icon" style="background:var(--accent-tint);">🖼</div>
+              <div>
+                <div class="upload-card-title">Select Image</div>
+                <div class="upload-card-sub">Drag & drop or browse your device</div>
+              </div>
+            </div>
+            <div class="upload-card-body">
+              <div class="drop-zone" id="singleDrop"
+                   onclick="document.getElementById('singleInput').click()"
+                   ondragover="onDragOver(event,'singleDrop')"
+                   ondragleave="onDragLeave('singleDrop')"
+                   ondrop="onDrop(event,'single')">
+                <div id="singleDropInner">
+                  <div class="drop-icon">🏔</div>
+                  <div class="drop-title">Drop your image here</div>
+                  <div class="drop-sub">or <span class="browse-link">browse files</span> from your device</div>
+                  <div class="drop-formats">
+                    <span class="fmt-chip">JPG</span>
+                    <span class="fmt-chip">PNG</span>
+                    <span class="fmt-chip">WEBP</span>
+                    <span class="fmt-chip">GIF</span>
+                    <span class="fmt-chip">SVG</span>
+                    <span class="fmt-chip">Max 10 MB</span>
+                  </div>
+                </div>
+              </div>
+              <input type="file" id="singleInput" accept="image/*" style="display:none" onchange="handleSingleFile(this.files[0])"/>
+
+              <div class="progress-wrap" id="singleProgress" style="display:none;">
+                <div class="progress-label">
+                  <span>Uploading…</span>
+                  <span id="singlePct">0%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="singleFill"></div></div>
+                <div class="progress-status" id="singleStatus">Preparing…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="upload-card">
+            <div class="upload-card-header">
+              <div class="upload-card-icon" style="background:var(--accent2-tint);">📝</div>
+              <div>
+                <div class="upload-card-title">Image Details</div>
+                <div class="upload-card-sub">Add metadata for your image</div>
+              </div>
+            </div>
+            <div class="upload-card-body">
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group">
+                <label class="form-label"><span class="required-dot"></span> Category</label>
+                <select class="form-select" id="singleCategory" onchange="checkSingleValidity()">
+                  <option value="">— Select —</option>
+                  {% for cat in categories %}
+                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="upload-card" id="previewCard" style="display:none;">
+            <div class="upload-card-header">
+              <div class="upload-card-icon" style="background:var(--success-tint);">👁</div>
+              <div>
+                <div class="upload-card-title">Preview</div>
+                <div class="upload-card-sub">Selected file</div>
+              </div>
+            </div>
+            <div class="upload-card-body">
+              <div class="file-preview">
+                <div class="preview-thumb-wrap">
+                  <img class="preview-thumb" id="previewImg" src="" alt="preview"/>
+                </div>
+                <div class="preview-info">
+                  <div class="preview-name" id="previewName">—</div>
+                  <div class="preview-meta">
+                    <span class="preview-tag" id="previewType">—</span>
+                    <span class="preview-tag" id="previewSize">—</span>
+                    <span class="preview-tag" id="previewDim">—</span>
+                  </div>
+                  <div class="preview-meta" style="margin-top:8px;">
+                    <span class="preview-tag green" id="previewOk" style="display:none;">✓ Ready</span>
+                  </div>
+                </div>
+                <button class="remove-file-btn" onclick="removeSingleFile()">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="submit-section">
+            <button class="btn btn-primary" id="singleSubmitBtn" style="width:100%;justify-content:center;" onclick="submitSingle()" disabled>
+              ↑ Upload Image
+            </button>
+            <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;" onclick="resetSingle()">
+              ↺ Reset
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="panel-bulk">
+      <div class="two-col">
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="upload-card">
+            <div class="upload-card-header">
+              <div class="upload-card-icon" style="background:var(--accent2-tint);">📦</div>
+              <div>
+                <div class="upload-card-title">Upload ZIP Archive</div>
+                <div class="upload-card-sub">Pack multiple images into a single .zip file</div>
+              </div>
+            </div>
+            <div class="upload-card-body">
+              <div class="drop-zone zip-zone" id="zipDrop"
+                   onclick="document.getElementById('zipInput').click()"
+                   ondragover="onDragOver(event,'zipDrop')"
+                   ondragleave="onDragLeave('zipDrop')"
+                   ondrop="onDrop(event,'zip')">
+                <div id="zipDropInner">
+                  <div class="drop-icon">📦</div>
+                  <div class="drop-title">Drop your ZIP here</div>
+                  <div class="drop-sub">or <span class="zip-browse-link">browse files</span> from your device</div>
+                  <div class="drop-formats">
+                    <span class="fmt-chip" style="border-color:#6e8eff40;color:var(--accent2);">.ZIP</span>
+                    <span class="fmt-chip">JPG inside</span>
+                    <span class="fmt-chip">PNG inside</span>
+                    <span class="fmt-chip">Max 200 MB</span>
+                  </div>
+                </div>
+              </div>
+              <input type="file" id="zipInput" accept=".zip,application/zip" style="display:none" onchange="handleZipFile(this.files[0])" />
+
+              <div id="zipSummaryWrap" style="display:none;">
+                <div class="summary-card" style="margin-top:20px;">
+                  <div class="summary-item">
+                    <div class="summary-val" id="zipTotalFiles">0</div>
+                    <div class="summary-lbl">Total Files</div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="summary-val" id="zipValidFiles">0</div>
+                    <div class="summary-lbl">Valid Images</div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="summary-val" id="zipSkippedFiles">0</div>
+                    <div class="summary-lbl">Skipped</div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="summary-val" id="zipTotalSize">0 MB</div>
+                    <div class="summary-lbl">Total Size</div>
+                  </div>
+                </div>
+
+                <div class="zip-contents" id="zipContents">
+                  <div class="zip-contents-header">
+                    <span class="zip-contents-title">Archive Contents</span>
+                    <span class="zip-contents-count" id="zipFileCountBadge">0 files</span>
+                  </div>
+                  <div class="zip-file-list" id="zipFileList"></div>
+                </div>
+
+                <div class="progress-wrap" id="bulkProgress" style="display:none;margin-top:16px;">
+                  <div class="progress-label">
+                    <span id="bulkProgressLabel">Uploading…</span>
+                    <span id="bulkPct">0%</span>
+                  </div>
+                  <div class="progress-bar"><div class="progress-fill" id="bulkFill"></div></div>
+                  <div class="progress-status" id="bulkStatus">Starting…</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="upload-card">
+            <div class="upload-card-header">
+              <div class="upload-card-icon" style="background:var(--success-tint);">📋</div>
+              <div><div class="upload-card-title">How ZIP Upload Works</div></div>
+            </div>
+            <div class="upload-card-body">
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                  <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">1</div>
+                  <div><div style="font-size:13px;font-weight:500;">Prepare your ZIP</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">Pack all images into a .zip — subfolders are supported and mapped to categories automatically.</div></div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                  <div style="width:26px;height:26px;border-radius:50%;background:var(--accent2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">2</div>
+                  <div><div style="font-size:13px;font-weight:500;">Drop & Analyse</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">We scan the archive and list all images with size info. Invalid files are skipped automatically.</div></div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                  <div style="width:26px;height:26px;border-radius:50%;background:#7affb8;color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">3</div>
+                  <div><div style="font-size:13px;font-weight:500;">Map & Upload</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">Assign categories to subfolders then click Upload. Each image is processed and added to the library.</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="upload-card" id="catMappingCard" style="display:none;">
+            <div class="upload-card-header">
+              <div class="upload-card-icon" style="background:rgba(216, 122, 255, 0.1);">🗂</div>
+              <div>
+                <div class="upload-card-title">Folder → Category</div>
+                <div class="upload-card-sub">Map subfolders to categories</div>
+              </div>
+            </div>
+            <div class="upload-card-body">
+              <div class="cat-mapping" id="catMappingBody">
+              </div>
+            </div>
+          </div>
+          <div class="upload-card">
+            <div class="upload-card-header">
+              <div class="upload-card-icon" style="background:rgba(255, 159, 122, 0.1);">⚙</div>
+              <div><div class="upload-card-title">Upload Settings</div></div>
+            </div>
+            <div class="upload-card-body">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-select" id="bulkDefaultCat" onchange="checkBulkValidity()">
+                  <option value="">— Select —</option>
+                  {% for cat in categories %}
+                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="submit-section">
+            <button class="btn btn-primary" id="bulkSubmitBtn" style="width:100%;justify-content:center;" onclick="uploadZipImages()" disabled>
+              ↑ Upload All Images
+            </button>
+            <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;" onclick="resetBulk()">
+              ↺ Reset
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}ImageVault - Categories{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div style="display: flex; align-items: center; gap: 14px">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="page-title">Manage <span>Categories</span></div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="two-col">
+    <div style="display: flex; flex-direction: column; gap: 24px">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value">{{ stats.total }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--success)">{{ stats.active }}</div>
+          <div class="stat-label">Active</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: var(--muted)">{{ stats.inactive }}</div>
+          <div class="stat-label">Inactive</div>
+        </div>
+      </div>
+
+      <div class="upload-card">
+        <div class="upload-card-header">
+          <div class="upload-card-icon" style="background: var(--accent2-tint)">📋</div>
+          <div>
+            <div class="upload-card-title">All Categories</div>
+            <div class="upload-card-sub">Current categories and image counts</div>
+          </div>
+        </div>
+
+        <div class="upload-card-body" style="padding-bottom: 8px">
+          <div class="table-toolbar">
+            <div class="search-box">
+              <span style="color: var(--muted); font-size: 14px">🔍</span>
+              <input type="text" placeholder="Search categories…" />
+            </div>
+            <div class="filter-chips">
+              <div class="fchip active">All</div>
+              <div class="fchip">Active</div>
+              <div class="fchip">Inactive</div>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto">
+            <table class="cat-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Standard</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Images</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cat in categories %}
+                <tr>
+                  <td>
+                    <div class="cat-name-cell">
+                      <div class="cat-name">{{ cat.name }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="std-tag">
+                      {% if cat.standard|lower == "uk" %}
+                        🇬🇧 UK
+                      {% elif cat.standard|lower == "us" %}
+                        🇺🇸 US
+                      {% else %}
+                        🌐 Both
+                      {% endif %}
+                    </span>
+                  </td>
+                  <td style="color: var(--muted); font-size: 12px">{{ cat.type }}</td>
+                  <td>
+                    <span class="status-pill {{ cat.status }}">● {{ cat.status }}</span>
+                  </td>
+                  <td style="font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted)">{{ cat.images }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="upload-card" id="catFormCard">
+      <div class="upload-card-header">
+        <div class="upload-card-icon" style="background: var(--accent-tint)">✚</div>
+        <div style="flex: 1">
+          <div class="upload-card-title">New Category</div>
+          <div class="upload-card-sub">Fill in the details below</div>
+        </div>
+      </div>
+
+      <div class="upload-card-body">
+        <div class="section-label">Basic Info</div>
+        <div class="form-row-1" style="margin-bottom: 18px">
+          <div class="form-group" style="margin-bottom: 0">
+            <label class="form-label"><span class="required-dot"></span> Category Name</label>
+            <input class="form-input" id="category_name" name="category_name" type="text" placeholder="e.g. Boiler" maxlength="60" />
+            <div class="char-count">0/60</div>
+          </div>
+        </div>
+
+        <hr class="form-divider" />
+        <div class="section-label">Country Standard</div>
+
+        <div class="standard-row">
+          <div class="standard-btn" onclick="selectCountry(this,'uk');">
+            <span class="std-flag">🇬🇧</span>
+            <div class="std-btn-label">UK Standard</div>
+          </div>
+          <div class="standard-btn" onclick="selectCountry(this,'us');">
+            <span class="std-flag">🇺🇸</span>
+            <div class="std-btn-label">US Standard</div>
+          </div>
+          <div class="standard-btn" onclick="selectCountry(this,'both');">
+            <span class="std-flag">🌐</span>
+            <div class="std-btn-label">Both</div>
+            <div class="std-btn-sub">Region-neutral</div>
+          </div>
+          <input type="hidden" id="country_selected" value="UK" />
+        </div>
+
+        <div class="submit-section" style="margin-top: 12px">
+          <button class="btn btn-primary" style="width: 100%; justify-content: center" onclick="saveCategory()">
+            ✚ Save Category
+          </button>
+          <button class="btn btn-ghost" style="width: 100%; justify-content: center; margin-top: 8px" onclick="resetCategoryForm()">
+            ↺ Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.querySelector(".search-box input");
+  const filterChips = document.querySelectorAll(".fchip");
+  const rows = document.querySelectorAll(".cat-table tbody tr");
+
+  let currentFilter = "all";
+  let searchQuery = "";
+
+  function filterTable() {
+    rows.forEach(row => {
+      const name = row.querySelector(".cat-name").textContent.toLowerCase();
+      const statusText = row.querySelector(".status-pill").textContent.toLowerCase();
+
+      const matchesSearch = name.includes(searchQuery);
+      
+      let matchesFilter = false;
+      if (currentFilter === "all") {
+        matchesFilter = true;
+      } else if (currentFilter === "active" && statusText.includes("active") && !statusText.includes("inactive")) {
+        matchesFilter = true;
+      } else if (currentFilter === "inactive" && statusText.includes("inactive")) {
+        matchesFilter = true;
+      }
+
+      if (matchesSearch && matchesFilter) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value.toLowerCase().trim();
+      filterTable();
+    });
+  }
+
+  filterChips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      filterChips.forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      currentFilter = chip.textContent.toLowerCase().trim();
+      filterTable();
+    });
+  });
+});
+</script>
+{% endblock %}

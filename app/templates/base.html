@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}ImageVault{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block head_extra %}{% endblock %}
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Image<span>Vault</span></div>
+      <div class="logo-sub">Media Library</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Library</div>
+      <a class="nav-item {% if request.path == '/dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+        <span class="nav-icon">⊞</span> Dashboard
+        <span class="nav-badge">{{ total_images }}</span>
+      </a>
+      <a class="nav-item {% if request.path == '/upload' %}active{% endif %}" href="{{ url_for('upload') }}">
+        <span class="nav-icon">↑</span> Upload
+      </a>
+      <a class="nav-item {% if request.path == '/Category' %}active{% endif %}" href="{{ url_for('Category') }}">
+        <span class="nav-icon">★</span> Category
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar">A</div>
+        <div>
+          <div class="user-name">{{ session.get('user', 'Admin') }}</div>
+          <div class="user-role" style="display:flex; justify-content:space-between; width:100%;">
+            <span>Super User</span>
+            <a href="{{ url_for('logout') }}"
+              style="color:var(--danger); text-decoration:none; margin-left:12px;">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block page_scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+Flask
+Flask-MySQLdb
+pandas
+openpyxl
+Pillow
+Werkzeug
+python-dotenv
+flask-limiter
+flask-wtf
+rq
+redis
