@@ -9,3 +9,4 @@ flask-limiter
 flask-wtf
 rq
 redis
+Flask-Cors

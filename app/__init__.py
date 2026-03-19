@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, send_from_directory
+from flask_cors import CORS
 from flask_mysqldb import MySQL
 
 load_dotenv()
@@ -9,6 +10,9 @@ load_dotenv()
 import config
 
 app = Flask(__name__)
+# Enable CORS for API routes so the Angular frontend can access it from a different origin
+# supports_credentials=True is required because Angular sends withCredentials: true
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 app.secret_key = config.SECRET_KEY
 
